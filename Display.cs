@@ -32,14 +32,23 @@ internal class Display : IDisplay
         byte y = V[opcode.Y];
 
         int NpixelHeight = opcode.N;
-
+        V[0xF] = 0;
         for ( int row = 0; row<NpixelHeight; row++)
         {
             byte spriteByte = memory[I + row];
-            byte xcoord = (byte)(x % (byte) DISPLAY_WIDTH);
-            byte ycoord = (byte)(y % (byte) DISPLAY_HEIGHT);
 
 
+            for (int col = 0; col < 8; col++)
+            {
+                byte xcoord = (byte)(x % (byte)DISPLAY_WIDTH);
+                byte ycoord = (byte)(y % (byte)DISPLAY_HEIGHT);
+                byte spritePixel = (byte)(spriteByte >> (col + 1) & 0xf);
+
+                if(spritePixel == 1 && GetDisplayAtCoord(xcoord,ycoord) == 1)
+                {
+                    _display[xcoord,ycoord] = 1;
+                }
+            }
         }
     }
 
