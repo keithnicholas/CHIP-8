@@ -40,13 +40,21 @@ internal class Display : IDisplay
 
             for (int col = 0; col < 8; col++)
             {
-                byte xcoord = (byte)(x % (byte)DISPLAY_WIDTH);
-                byte ycoord = (byte)(y % (byte)DISPLAY_HEIGHT);
-                byte spritePixel = (byte)(spriteByte >> (col + 1) & 0xf);
+
+                byte xcoord = (byte)((x+col) % (byte)DISPLAY_WIDTH);
+                byte ycoord = (byte)((y+row) % (byte)DISPLAY_HEIGHT);
+                byte spritePixel = (byte)(spriteByte >> (7-col) & 0x1);
 
                 if(spritePixel == 1 && GetDisplayAtCoord(xcoord,ycoord) == 1)
                 {
-                    _display[xcoord,ycoord] = 1;
+                    _display[xcoord,ycoord] = 0;
+                    V[0xF] = 1;
+
+                }
+                else if(spritePixel == 1 && GetDisplayAtCoord(xcoord, ycoord) == 0)
+                {
+                    //_display[xcoord, ycoord] ^= spritePixel;
+                    _display[xcoord, ycoord] = spritePixel;
                 }
             }
         }
