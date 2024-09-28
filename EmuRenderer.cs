@@ -108,7 +108,7 @@ internal class EmuRenderer
                     runningRenderer = false;
                     break;
                 case SDL.SDL_EventType.SDL_KEYDOWN:
-                    uint thekey = e.key.keysym.unicode;
+                    SDL_Scancode thekey = e.key.keysym.scancode;
                     keyboardService.SetKeyifValid(thekey);
                     Console.WriteLine("Key press: "+ e.key.keysym.scancode);
                     break;

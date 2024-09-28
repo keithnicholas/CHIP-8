@@ -1,27 +1,29 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 
+using static SDL2.SDL;
+
 public class KeyboardService
 {
 
-    static Dictionary<string, Chip8Key> keysUnicodeMapping = new Dictionary<string, Chip8Key>
+    static readonly Dictionary<SDL_Scancode, Chip8Key> keysUnicodeMapping = new Dictionary<SDL_Scancode, Chip8Key>
     {
-        { UnicodeToChar('1'), Chip8Key.Key1 },
-        { UnicodeToChar('2'), Chip8Key.Key2 },
-        { UnicodeToChar('3'), Chip8Key.Key3 },
-        { UnicodeToChar('4'), Chip8Key.KeyC },
-        { UnicodeToChar('q'), Chip8Key.Key4 },
-        { UnicodeToChar('w'), Chip8Key.Key5 },
-        { UnicodeToChar('e'), Chip8Key.Key6 },
-        { UnicodeToChar('r'), Chip8Key.KeyD },
-        { UnicodeToChar('a'), Chip8Key.Key7 },
-        { UnicodeToChar('s'), Chip8Key.Key8 },
-        {UnicodeToChar('d'), Chip8Key.Key9 },
-        { UnicodeToChar('f'), Chip8Key.KeyE },
-        {UnicodeToChar('z'), Chip8Key.KeyA },
-        { UnicodeToChar('x'), Chip8Key.Key0 },
-        { UnicodeToChar('c'), Chip8Key.KeyB },
-        {UnicodeToChar('v'), Chip8Key.KeyF }
+        { SDL2.SDL.SDL_Scancode.SDL_SCANCODE_1, Chip8Key.Key1 },
+        { SDL2.SDL.SDL_Scancode.SDL_SCANCODE_2, Chip8Key.Key2 },
+        { SDL2.SDL.SDL_Scancode.SDL_SCANCODE_3, Chip8Key.Key3 },
+        { SDL2.SDL.SDL_Scancode.SDL_SCANCODE_4, Chip8Key.KeyC },
+        { SDL2.SDL.SDL_Scancode.SDL_SCANCODE_Q, Chip8Key.Key4 },
+        { SDL2.SDL.SDL_Scancode.SDL_SCANCODE_W, Chip8Key.Key5 },
+        { SDL2.SDL.SDL_Scancode.SDL_SCANCODE_E, Chip8Key.Key6 },
+        { SDL2.SDL.SDL_Scancode.SDL_SCANCODE_R, Chip8Key.KeyD },
+        { SDL2.SDL.SDL_Scancode.SDL_SCANCODE_A, Chip8Key.Key7 },
+        { SDL2.SDL.SDL_Scancode.SDL_SCANCODE_S, Chip8Key.Key8 },
+        {SDL2.SDL.SDL_Scancode.SDL_SCANCODE_D, Chip8Key.Key9 },
+        {SDL2.SDL.SDL_Scancode.SDL_SCANCODE_F, Chip8Key.KeyE },
+        {SDL2.SDL.SDL_Scancode.SDL_SCANCODE_Z, Chip8Key.KeyA },
+        { SDL2.SDL.SDL_Scancode.SDL_SCANCODE_X, Chip8Key.Key0 },
+        { SDL2.SDL.SDL_Scancode.SDL_SCANCODE_C, Chip8Key.KeyB },
+        {SDL2.SDL.SDL_Scancode.SDL_SCANCODE_V, Chip8Key.KeyF }
 
     } ;
 
@@ -33,13 +35,12 @@ public class KeyboardService
         
     }
 
-    internal void SetKeyifValid(uint keyUnicode)
+    public void SetKeyifValid(SDL_Scancode keycode)
     {
-        String theChar = UnicodeToChar(keyUnicode);
         
-        if (keysUnicodeMapping.ContainsKey(theChar))
+        if (keysUnicodeMapping.ContainsKey(keycode))
         {
-            LastPressedKeyByte = (byte) keysUnicodeMapping[theChar];
+            LastPressedKeyByte = (byte) keysUnicodeMapping[keycode];
             IsPressed = true;
         }
         else

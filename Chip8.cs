@@ -13,7 +13,7 @@ class Chip8
     bool running = true;
 
     private byte[] memory = new byte[4096]; //4kb RAM
-    private byte[] VREG = new byte[16]; // 16 general purpose registers called va-vf
+    private byte[] VREG = new byte[16]; // 16 general purpose registers called v0-v9-va-vf
     private ushort I; // Index register
     private ushort pc;
 
