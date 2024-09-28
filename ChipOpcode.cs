@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Drawing;
 using System.Security.Cryptography;
 
 public class ChipOpcode
@@ -12,6 +13,7 @@ public class ChipOpcode
     public byte NN { get; private set; } // The second byte (third and fourth nibbles). An 8-bit immediate number.
     public ushort NNN { get; private set; } // The second, third and fourth nibbles. A 12-bit immediate memory address.
 
+    public String debugHex;
     public ChipOpcode(ushort decodeOpcode)
     {
         X = (byte)((decodeOpcode & 0x0F00) >> 8);
@@ -20,5 +22,11 @@ public class ChipOpcode
         NN = (byte)(decodeOpcode & 0x00FF);
         NNN = (ushort)(decodeOpcode & 0x0FFF);
         Raw = decodeOpcode;
+        debugHex = Raw.ToString("X");
+    }
+
+    public override string ToString() {
+        return Raw.ToString("X");  // Gives you hexadecimal
+
     }
 }

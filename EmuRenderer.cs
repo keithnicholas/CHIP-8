@@ -1,4 +1,5 @@
 ﻿using SDL2;
+using static SDL2.SDL;
 // See https://aka.ms/new-console-template for more information
 
 internal class EmuRenderer
@@ -6,9 +7,13 @@ internal class EmuRenderer
     IntPtr window;
     IntPtr renderer;
     bool runningRenderer = true;
+    KeyboardService keyboardService = null;
 
     public bool RendererIsRunning { get => runningRenderer; set => runningRenderer = value; }
-
+    public EmuRenderer(KeyboardService kbs)
+    {
+        keyboardService = kbs;
+    }
     public void SetupWinRender()
     {
         // Initilizes SDL.
@@ -24,7 +29,7 @@ internal class EmuRenderer
             SDL.SDL_WINDOWPOS_UNDEFINED,
             640,
             480,
-            SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN);
+            SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN );
 
         if (window == IntPtr.Zero)
         {
@@ -32,12 +37,16 @@ internal class EmuRenderer
         }
 
         // Creates a new SDL hardware renderer using the default graphics device with VSYNC enabled.
-        renderer = SDL.SDL_CreateRenderer(
-            window,
-            -1,
-            SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED |
-            SDL.SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
+        //renderer = SDL.SDL_CreateRenderer(
+        //    window,
+        //    -1,
+        //    SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED |
+        //    SDL.SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
 
+        renderer = SDL.SDL_CreateRenderer(
+    window,
+    -1,
+    SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
         if (renderer == IntPtr.Zero)
         {
             Console.WriteLine($"There was an issue creating the renderer. {SDL.SDL_GetError()}");
@@ -58,13 +67,27 @@ internal class EmuRenderer
         // Draw a line from top left to bottom right
         //SDL.SDL_RenderDrawLine(renderer, 0, 0, 640, 480);
 
-        for (int x = 0; x < Display.DISPLAY_WIDTH; x++)
+        int offset = 5;
+
+        int curWidth = 640;
+        int curHeight = 480;
+        SDL.SDL_GetWindowSize(renderer, out curWidth, out curHeight);
+        for (int xEmu = 0; xEmu < Display.DISPLAY_WIDTH; xEmu++)
         {
-            for (int y = 0; y < Display.DISPLAY_HEIGHT; y++)
+            for (int yEmu = 0; yEmu < Display.DISPLAY_HEIGHT; yEmu++)
             {
-                if (display.GetDisplayAtCoord(x, y) == 0x1)
+                if (display.GetDisplayAtCoord(xEmu, yEmu) == 0x1)
                 {
-                    SDL.SDL_RenderDrawPoint(renderer, x + 300, y + 200);
+                    //SDL.SDL_RenderDrawPoint(renderer, x + 300, y + 200);
+
+                    var rect = new SDL.SDL_Rect
+                    {
+                        x = 100 + xEmu*offset,
+                        y = 200 + yEmu*offset,
+                        w = offset,
+                        h = offset
+                    };
+                    SDL.SDL_RenderFillRect(renderer, ref rect);
                 }
             }
         }
@@ -76,12 +99,18 @@ internal class EmuRenderer
     public void PollEvents()
     {
         // Check to see if there are any events and continue to do so until the queue is empty.
+        keyboardService.IsPressed = false;
         while (SDL.SDL_PollEvent(out SDL.SDL_Event e) == 1)
         {
             switch (e.type)
             {
                 case SDL.SDL_EventType.SDL_QUIT:
                     runningRenderer = false;
+                    break;
+                case SDL.SDL_EventType.SDL_KEYDOWN:
+                    uint thekey = e.key.keysym.unicode;
+                    keyboardService.SetKeyifValid(thekey);
+                    Console.WriteLine("Key press: "+ e.key.keysym.scancode);
                     break;
             }
         }

@@ -3,11 +3,13 @@
 using Microsoft.Win32;
 using SDL2;
 using System;
+using System.Collections.Generic;
 
 class Chip8
 {
 
-    private EmuRenderer emuRender;
+    private EmuRenderer emuRender = null;
+    private KeyboardService keyboardService = new KeyboardService();
     bool running = true;
 
     private byte[] memory = new byte[4096]; //4kb RAM
@@ -45,6 +47,7 @@ class Chip8
         0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
         0xF0, 0x80, 0xF0, 0x80, 0x80  // F
     };
+    private ushort startFontAddress = 0x050;
 
 
     public Chip8(bool superCHIP = false)
@@ -55,7 +58,7 @@ class Chip8
     }
     private void SetupWinRender()
     {
-        emuRender = new EmuRenderer();
+        emuRender = new EmuRenderer(keyboardService);
         emuRender.SetupWinRender();
     }
     private void PollEvents()
@@ -138,7 +141,8 @@ class Chip8
                 else if ((opcode.Raw & 0x00FF) == 0x00EE)
                 {
                     //return from subroutine 00EE, and it does this by removing(“popping”) the last address from the stack and setting the PC to it.
-                    pc = stack[sp--];
+                    sp -= 1;
+                    pc = stack[sp];
                 }
                 break;
             case 0x1000:
@@ -223,20 +227,101 @@ class Chip8
                 break;
             case 0xD000:
                 // DXYN
-                display.draws(opcode, VREG, memory, I);
+                display.draw(opcode, VREG, memory, I);
                 break;
             case 0xE000:
-                if((opcode.Raw & 0x00FF) == 0x009E)
+                //EX9E will skip one instruction (increment PC by 2) if the key corresponding to the value in VX is pressed.
+                if ((opcode.Raw & 0x00FF) == 0x009E)
                 {
-
+                    if (VREG[opcode.X] == keyboardService.LastPressedKeyByte)
+                    {
+                        pc += 2;
+                    }
 
                 }
                 else if((opcode.Raw & 0x00FF) == 0x00A1)
                 {
-
+                    if (VREG[opcode.X] != keyboardService.LastPressedKeyByte)
+                    {
+                        pc += 2;
+                    }
                 }
                 break;
             case 0xF000:
+                //FX07 sets VX to the current value of the delay timer
+                if ((opcode.Raw & 0x00FF) == 0x0007)
+                {
+                    VREG[opcode.X] = delayTimer;
+                }
+                else if ((opcode.Raw & 0x00FF) == 0x0015)
+                {
+                    //FX15 sets the delay timer to the value in VX
+                    delayTimer = VREG[opcode.X];
+                }
+                else if ((opcode.Raw & 0x00FF) == 0x0018)
+                {
+                    //FX18 sets the sound timer to the value in VX
+                    soundTimer = VREG[opcode.X];
+                }
+                else if ((opcode.Raw & 0x00FF) == 0x001E)
+                {
+                    //FX1E The index register I will get the value in VX added to it.
+
+                    I += VREG[opcode.X];
+                }
+                else if ((opcode.Raw & 0x00FF) == 0x000A)
+                {
+                    //FX0A: Get key 
+                    //This instruction “blocks”; it stops executing instructions and waits for key input (or loops forever, unless a key is pressed).
+                    if (!keyboardService.IsPressed)
+                    {
+                        pc -= 2;
+                    }
+                }
+                else if ((opcode.Raw & 0x00FF) == 0x0029)
+                {
+                    //FX29
+                    //The index register I is set to the address of the hexadecimal character in VX.
+                    //You probably stored that font somewhere in the first 512 bytes of memory,
+                    //so now you just need to point I to the right character.
+
+                    byte charTofind = VREG[opcode.X];
+                    for (int i = 0; i < fontset.Length; i++)
+                    {
+                        if (memory[startFontAddress + i] == charTofind)
+                        {
+                            I = (ushort)(startFontAddress + i);
+                        }
+                    }
+                    throw new Exception("Cannot find font: " + charTofind);
+                }
+                else if ((opcode.Raw & 0x00FF) == 0x0055) {
+                    //FX55 ambigous instruction
+                    // implemented modern chip version
+                    StoreToMemory();
+
+                }
+                else if ((opcode.Raw & 0x00FF) == 0x0065)
+                {
+                    //FX65 ambigous instruction
+                    // implemented modern chip version
+                    StoreToMemory();
+
+                }
+                else if ((opcode.Raw & 0x00FF) == 0x0033)
+                {
+                    // FX33 binary coded decimal
+                    byte numVx = VREG[opcode.X];
+                    int offsetIdx = 2;
+                    while (offsetIdx >= 0)
+                    {
+                        memory[I + offsetIdx] = (byte)(numVx % 10); // Store the least significant digit
+                        numVx /= 10; // Remove the least significant digit
+                        offsetIdx--;
+
+                    }
+
+                }
                 break;
         }
 
@@ -311,32 +396,30 @@ class Chip8
                 VREG[opcode.X] = (byte)(VREG[opcode.X] - VREG[opcode.Y]);
 
                 break;
-            case 0x0008:
-                // 8XY6: Ambiguous instruction!,  put the value of VY into VX, and then shifted the value in VX 1 bit to the right
-                // 8XYE: Ambiguous instruction!,  put the value of VY into VX, and then shifted the value in VX 1 bit to the left
-                // For both: VY was not affected, but the flag register VF would be set to the bit that was shifted out.
+            case 0x0006:
+                // 8XY6: Ambiguous instruction!, 
+                // 8XYE: Ambiguous instruction!
+
+                if (!superCHIP)
+                {
+                    VREG[opcode.X] = VREG[opcode.Y];
+
+                }
+                VREG[0xF] = (byte)(VREG[opcode.X] & 0x01); // Set VF to the least significant bit before the shift
+                VREG[opcode.X] >>= 1;
+                break;
+            case 0x000E:
+                //Set VX to VY, then shift VX left by 1.VF is set to the most significant bit of VX before the shift
                 if (!superCHIP)
                 {
                     VREG[opcode.X] = VREG[opcode.Y];
 
                 }
 
-                if ((opcode.Raw & 0x000F) == 0x0006)
-                {
-                    VREG[0xF] = (byte)(VREG[opcode.X] & 0x1); // Set VF to the least significant bit before the shift
-                    VREG[opcode.X] = (byte)(VREG[opcode.X] >> 1);
-                }
-                else if ((opcode.Raw & 0x000F) == 0x000E)
-                {
-                    VREG[0xF]= (byte)((VREG[opcode.X] & 0x80) >> 7); // Set VF to the most significant bit before the shift
-                    VREG[opcode.X] <<= 1;
-                }
-                else
-                {
-                    throw new Exception("Illegal instructions");
-                }
-
+                VREG[0xF] = (byte)((VREG[opcode.X] & 0x80) >> 7); // Set VF to the most significant bit before the shift
+                VREG[opcode.X] <<= 1;
                 break;
+
         }
     }
     private void UpdateTimers()
@@ -353,12 +436,17 @@ class Chip8
 
     private void LoadFontset()
     {
-        ushort startFontAddress = 0x050;
         for (int i = 0; i < fontset.Length; i++)
         {
             memory[startFontAddress + i] = fontset[i];
         }
     }
 
-
+    private void StoreToMemory()
+    {
+        for(int registerIdx = 0; registerIdx <= opcode.X; registerIdx++)
+        {
+            memory[I+registerIdx] = VREG[registerIdx];
+        }
+    }
 }
