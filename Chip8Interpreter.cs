@@ -5,7 +5,7 @@ using SDL2;
 using System;
 using System.Collections.Generic;
 
-class Chip8
+class Chip8Interpreter
 {
 
     private EmuRenderer emuRender = null;
@@ -50,7 +50,7 @@ class Chip8
     private ushort startFontAddress = 0x050;
 
 
-    public Chip8(bool superCHIP = false)
+    public Chip8Interpreter(bool superCHIP = false)
     {
         SetupWinRender();
         InitProgram();
@@ -115,8 +115,16 @@ class Chip8
     private void runOneCycle()
     {
         FetchOpcode();
+        IncrementProgramCounter();
+
         ExecuteOpcode();
+
         UpdateTimers();
+    }
+
+    private void IncrementProgramCounter()
+    {
+        pc += 2;
     }
 
     private void FetchOpcode()
@@ -125,7 +133,6 @@ class Chip8
         // Combine two consecutive bytes into one opcode (big endian, most significant store smallest byte)
         //opcode.raw = (ushort)(memory[pc] << 8 | memory[pc + 1]);
         opcode = new ChipOpcode((ushort)(memory[pc] << 8 | memory[pc + 1]));
-        pc += 2;
     }
     private void ExecuteOpcode()
     {
@@ -198,6 +205,10 @@ class Chip8
                 break;
             case 0x9000:
                 //9XY0 skips if they are not equal.
+                if (VREG[opcode.X] != VREG[opcode.Y])
+                {
+                    pc += 2; // Skip the next instruction (2 bytes)
+                }
                 break;
             case 0xA000:
                 // ANNN sets the index register I to the value NNN
@@ -277,6 +288,10 @@ class Chip8
                     {
                         pc -= 2;
                     }
+                    else
+                    {
+                        VREG[opcode.X] = keyboardService.LastPressedKeyByte;
+                    }
                 }
                 else if ((opcode.Raw & 0x00FF) == 0x0029)
                 {
@@ -285,15 +300,14 @@ class Chip8
                     //You probably stored that font somewhere in the first 512 bytes of memory,
                     //so now you just need to point I to the right character.
 
-                    byte charTofind = VREG[opcode.X];
-                    for (int i = 0; i < fontset.Length; i++)
-                    {
-                        if (memory[startFontAddress + i] == charTofind)
-                        {
-                            I = (ushort)(startFontAddress + i);
-                        }
-                    }
-                    throw new Exception("Cannot find font: " + charTofind);
+                    // FX29: Set I to the location of the sprite for the character in V[X]
+                    // V[X] contains the hexadecimal character (0 to F)
+                    // Each character sprite is 5 bytes long, starting at startFontAddress
+
+                    byte charToFind = VREG[opcode.X]; // Get the character in V[X]
+
+                    // Each character sprite is 5 bytes long, so we calculate the location
+                    I = (ushort)(startFontAddress + (charToFind * 5));
                 }
                 else if ((opcode.Raw & 0x00FF) == 0x0055) {
                     //FX55 ambigous instruction
@@ -305,7 +319,7 @@ class Chip8
                 {
                     //FX65 ambigous instruction
                     // implemented modern chip version
-                    StoreToMemory();
+                    LoadToMemory();
 
                 }
                 else if ((opcode.Raw & 0x00FF) == 0x0033)
@@ -367,34 +381,14 @@ class Chip8
                 VREG[opcode.X] = (byte)result; // Store the result in VX (only the lower 8 bits)
                 break;
             case 0x0005:
-                // 8XY5: 8XY5 sets VX to the result of VX - VY
-                if(VREG[opcode.X] >= VREG[opcode.Y])
-                {
-                    VREG[0xF] = 1; // Set carry flag
-
-                }
-                else
-                {
-                    VREG[0xF] = 0; // Set carry flag
-
-                }
-                VREG[opcode.X] = (byte)(VREG[opcode.X] - VREG[opcode.Y]);
-
+                // 8XY5: Subtract VY from VX, set VF to 0 if there's a borrow, 1 otherwise
+                VREG[0xF] = (byte)(VREG[opcode.X] >= VREG[opcode.Y] ? 1 : 0);
+                VREG[opcode.X] -= VREG[opcode.Y];
                 break;
             case 0x0007:
-                // 8XY7: 8XY5 sets VX to the result of Vy - Vx
-                if ( VREG[opcode.Y] >= VREG[opcode.X])
-                {
-                    VREG[0xF] = 1; 
-
-                }
-                else
-                {
-                    VREG[0xF] = 0; // Set carry flag
-
-                }
-                VREG[opcode.X] = (byte)(VREG[opcode.X] - VREG[opcode.Y]);
-
+                // 8XY7: Set VX to VY - VX, set VF to 0 if there's a borrow, 1 otherwise
+                VREG[0xF] = (byte)(VREG[opcode.Y] >= VREG[opcode.X] ? 1 : 0);
+                VREG[opcode.X] = (byte)(VREG[opcode.Y] - VREG[opcode.X]);
                 break;
             case 0x0006:
                 // 8XY6: Ambiguous instruction!, 
@@ -447,6 +441,15 @@ class Chip8
         for(int registerIdx = 0; registerIdx <= opcode.X; registerIdx++)
         {
             memory[I+registerIdx] = VREG[registerIdx];
+        }
+    }
+
+    private void LoadToMemory()
+    {
+        //FX65 does the opposite; it takes the value stored at the memory addresses and loads them into the variable registers instead.
+        for (int registerIdx = 0; registerIdx <= opcode.X; registerIdx++)
+        {
+            VREG[registerIdx] = memory[I+registerIdx];
         }
     }
 }

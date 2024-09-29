@@ -46,7 +46,8 @@ internal class EmuRenderer
         renderer = SDL.SDL_CreateRenderer(
     window,
     -1,
-    SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+    SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED |
+       SDL.SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
         if (renderer == IntPtr.Zero)
         {
             Console.WriteLine($"There was an issue creating the renderer. {SDL.SDL_GetError()}");
