@@ -46,7 +46,8 @@ internal class EmuRenderer
         renderer = SDL.SDL_CreateRenderer(
     window,
     -1,
-    SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+    SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED |
+       SDL.SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
         if (renderer == IntPtr.Zero)
         {
             Console.WriteLine($"There was an issue creating the renderer. {SDL.SDL_GetError()}");
@@ -108,7 +109,7 @@ internal class EmuRenderer
                     runningRenderer = false;
                     break;
                 case SDL.SDL_EventType.SDL_KEYDOWN:
-                    uint thekey = e.key.keysym.unicode;
+                    SDL_Scancode thekey = e.key.keysym.scancode;
                     keyboardService.SetKeyifValid(thekey);
                     Console.WriteLine("Key press: "+ e.key.keysym.scancode);
                     break;
