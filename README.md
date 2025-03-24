@@ -1,41 +1,33 @@
-# Chip8 Emulator - OctoVision
+# CHIP-8 Emulator
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/yourusername/OctoVision/actions)
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/OctoVision?style=social)](https://github.com/yourusername/OctoVision)
+[![Build Status](https://github.com/keithnicholas/CHIP-8/actions/workflows/cmake.yml/badge.svg)](https://github.com/keithnicholas/CHIP-8/actions/workflows/cmake.yml)
 
-**OctoVision** is a sleek and efficient Chip-8 emulator, designed for clarity, performance, and cross-platform compatibility. Dive into the world of retro gaming and experience the charm of classic Chip-8 programs.
-
-![Emulator Screenshot](path/to/your/screenshot.png)
+This repository contains a simple CHIP-8 emulator written in C++. It's designed to be straightforward and easy to understand, making it a great resource for learning about CHIP-8 emulation.
 
 ## Features
 
-* **Clean and Modular Design:** Easy to understand and extend.
-* **Cross-Platform Support:** Runs on Windows, macOS, Linux, and potentially web browsers (using WebAssembly).
-* **Accurate Emulation:** Implements the Chip-8 specification faithfully.
-* **Debug Mode:** Step through instructions, inspect registers, and view memory.
-* **Customizable Display:** Adjust resolution and color palettes.
-* **Sound Support:** Play those nostalgic beeping sounds.
-* **ROM Loading:** Load Chip-8 ROMs from files.
-* **Input Handling:** Keyboard input for game controls.
-* **Configurable Key Mapping:** Remap keys to your preference.
-* **Performance Optimizations:** Designed for efficient execution.
+* **Basic CHIP-8 Emulation:** Implements the core CHIP-8 instruction set.
+* **SDL2 Graphics:** Uses SDL2 for rendering the CHIP-8 display.
+* **Simple Input Handling:** Keyboard input is mapped to CHIP-8 keys.
+* **ROM Loading:** Loads CHIP-8 ROM files.
+* **Cross platform:** uses cmake and SDL2 for easy cross platform compilation.
 
 ## Getting Started
 
 ### Prerequisites
 
-* A C++ compiler (e.g., GCC, Clang, MSVC).
-* CMake (for building).
-* SDL2 (for graphics and input, if using SDL2 renderer).
+* A C++ compiler (GCC, Clang, MSVC).
+* CMake.
+* SDL2 development libraries.
 
 ### Building
 
 1.  **Clone the repository:**
 
     ```bash
-    git clone [https://github.com/yourusername/OctoVision.git](https://www.google.com/search?q=https://github.com/yourusername/OctoVision.git)
-    cd OctoVision
+    git clone [https://github.com/keithnicholas/CHIP-8.git](https://github.com/keithnicholas/CHIP-8.git)
+    cd CHIP-8
     ```
 
 2.  **Create a build directory:**
@@ -60,34 +52,35 @@
 ### Running
 
 1.  Navigate to the build directory.
-2.  Run the emulator with a Chip-8 ROM:
+2.  Run the emulator with a CHIP-8 ROM:
 
     ```bash
-    ./OctoVision path/to/your/rom.ch8
+    ./chip8 path/to/your/rom.ch8
     ```
 
 ## Usage
 
-* **Loading ROMs:** Simply provide the path to your `.ch8` ROM file as a command-line argument.
-* **Keyboard Controls:**
-    * `1`, `2`, `3`, `C` map to `1`, `2`, `3`, `4` in Chip-8.
-    * `4`, `5`, `6`, `D` map to `Q`, `W`, `E`, `R`.
-    * `7`, `8`, `9`, `E` map to `A`, `S`, `D`, `F`.
-    * `A`, `0`, `B`, `F` map to `Z`, `X`, `C`, `V`.
-* **Debug Mode:** (If implemented)
-    * Press `D` to toggle debug mode.
-    * Use arrow keys to step through instructions.
-    * View registers and memory in the debug console.
+* **Loading ROMs:** Provide the path to your `.ch8` ROM file as a command-line argument.
+* **Keyboard Controls:** The keyboard mapping is as follows:
+
+    ```
+    1 2 3 C
+    4 5 6 D
+    7 8 9 E
+    A 0 B F
+    ```
+
+    These keys correspond to the CHIP-8 keypad.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit pull requests or open issues for bug fixes, feature requests, or improvements.
+Contributions are welcome! If you find any bugs or have suggestions for improvements, please feel free to submit a pull request or open an issue on [https://github.com/keithnicholas/CHIP-8](https://github.com/keithnicholas/CHIP-8).
 
-1.  Fork the repository.
+1.  Fork the repository from [https://github.com/keithnicholas/CHIP-8](https://github.com/keithnicholas/CHIP-8).
 2.  Create your feature branch (`git checkout -b feature/your-feature`).
 3.  Commit your changes (`git commit -am 'Add some feature'`).
 4.  Push to the branch (`git push origin feature/your-feature`).
-5.  Open a pull request.
+5.  Open a pull request on [https://github.com/keithnicholas/CHIP-8](https://github.com/keithnicholas/CHIP-8).
 
 ## License
 
@@ -95,16 +88,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-* [Cowgod's Chip-8 Technical Reference v1.0](http://devernay.free.fr/hacks/chip8/chip8.htm)
-* [Wikipedia - Chip-8](https://en.wikipedia.org/wiki/CHIP-8)
 * [SDL2](https://www.libsdl.org/)
-
-## Future Improvements
-
-* Implement more detailed debugging tools.
-* Add save state functionality.
-* Improve sound emulation.
-* Add more rendering options (shaders, scaling).
-* WebAssembly support.
-* GUI for ROM selection and settings.
-* Implement Super Chip-48 and XO-Chip extensions.
