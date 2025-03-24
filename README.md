@@ -1,25 +1,24 @@
-# CHIP-8 Emulator
+# CHIP-8 Emulator (C#)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://github.com/keithnicholas/CHIP-8/actions/workflows/cmake.yml/badge.svg)](https://github.com/keithnicholas/CHIP-8/actions/workflows/cmake.yml)
+[![Build Status](https://github.com/keithnicholas/CHIP-8/actions/workflows/dotnet.yml/badge.svg)](https://github.com/keithnicholas/CHIP-8/actions/workflows/dotnet.yml)
 
-This repository contains a simple CHIP-8 emulator written in C++. It's designed to be straightforward and easy to understand, making it a great resource for learning about CHIP-8 emulation.
+This repository contains a simple CHIP-8 emulator written in C#. It's designed to be straightforward and easy to understand, making it a great resource for learning about CHIP-8 emulation in the C# language.
 
 ## Features
 
 * **Basic CHIP-8 Emulation:** Implements the core CHIP-8 instruction set.
-* **SDL2 Graphics:** Uses SDL2 for rendering the CHIP-8 display.
+* **SDL2/OpenTK Graphics:** Uses SDL2/OpenTK (or similar) for rendering the CHIP-8 display.
 * **Simple Input Handling:** Keyboard input is mapped to CHIP-8 keys.
 * **ROM Loading:** Loads CHIP-8 ROM files.
-* **Cross platform:** uses cmake and SDL2 for easy cross platform compilation.
+* **Cross Platform:** uses .NET for easy cross platform compilation.
 
 ## Getting Started
 
 ### Prerequisites
 
-* A C++ compiler (GCC, Clang, MSVC).
-* CMake.
-* SDL2 development libraries.
+* .NET SDK.
+* SDL2/OpenTK or a suitable graphics library for .NET.
 
 ### Building
 
@@ -30,32 +29,19 @@ This repository contains a simple CHIP-8 emulator written in C++. It's designed 
     cd CHIP-8
     ```
 
-2.  **Create a build directory:**
+2.  **Build the project:**
 
     ```bash
-    mkdir build
-    cd build
-    ```
-
-3.  **Configure CMake:**
-
-    ```bash
-    cmake ..
-    ```
-
-4.  **Build the project:**
-
-    ```bash
-    make # or use your platform's build tool (e.g., ninja, MSBuild)
+    dotnet build
     ```
 
 ### Running
 
-1.  Navigate to the build directory.
+1.  Navigate to the project's build output directory (usually `bin/Debug/netX.X`).
 2.  Run the emulator with a CHIP-8 ROM:
 
     ```bash
-    ./chip8 path/to/your/rom.ch8
+    dotnet CHIP-8.dll path/to/your/rom.ch8
     ```
 
 ## Usage
@@ -88,4 +74,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-* [SDL2](https://www.libsdl.org/)
+* .NET
+* SDL2/OpenTK (or the graphics library used)
